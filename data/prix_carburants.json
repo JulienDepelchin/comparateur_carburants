@@ -1,8 +1,8 @@
 {
-  "updated_at": "2026-03-11T10:23:24Z",
+  "updated_at": "2026-03-11T10:47:07Z",
   "sources": {
-    "france": "Moyenne des stations 59-62 mises à jour depuis 3 jours",
-    "belgique": "Statbel prix officiel quotidien"
+    "france": "API officielle prix carburants France, moyenne des stations du 59 et du 62 mises à jour depuis 3 jours",
+    "belgique": "Carbu Belgique, médiane des meilleurs prix par province"
   },
   "scope": {
     "france_departements": [
@@ -10,20 +10,47 @@
       "62"
     ],
     "france_max_age_days": 3,
-    "belgique_jour": "11MAR26"
+    "belgique_provinces": [
+      "Hainaut",
+      "Namur",
+      "Flandre Occidentale"
+    ],
+    "belgique_aggregation": "median"
+  },
+  "hypotheses": {
+    "plein_litres": 40,
+    "consommation_l_100": 6
   },
   "prices": {
     "gazole": {
-      "france": 2.035,
-      "belgique": 1.923,
-      "france_sample_size": 175
+      "france": 2.037,
+      "belgique": 1.743,
+      "france_sample_size": 382,
+      "belgique_min": 1.733,
+      "belgique_min_province": "Namur"
     },
     "sp95": {
       "france": 1.832,
-      "belgique": 1.677,
-      "france_sample_size": 152,
+      "belgique": 1.502,
+      "france_sample_size": 332,
       "france_source": "E10",
-      "belgique_source": "Essence 95 RON E10"
+      "belgique_source": "Super 95 (E10)",
+      "belgique_min": 1.487,
+      "belgique_min_province": "Namur"
+    }
+  },
+  "calculs": {
+    "gazole": {
+      "ecart_prix": 0.294,
+      "economie_plein_40l": 11.76,
+      "distance_max_aller_km": 48.1,
+      "distance_max_ar_km": 96.2
+    },
+    "sp95": {
+      "ecart_prix": 0.33,
+      "economie_plein_40l": 13.2,
+      "distance_max_aller_km": 60.0,
+      "distance_max_ar_km": 120.1
     }
   }
 }
