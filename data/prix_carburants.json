@@ -1,0 +1,29 @@
+{
+  "updated_at": "2026-03-11T10:23:24Z",
+  "sources": {
+    "france": "Moyenne des stations 59-62 mises à jour depuis 3 jours",
+    "belgique": "Statbel prix officiel quotidien"
+  },
+  "scope": {
+    "france_departements": [
+      "59",
+      "62"
+    ],
+    "france_max_age_days": 3,
+    "belgique_jour": "11MAR26"
+  },
+  "prices": {
+    "gazole": {
+      "france": 2.035,
+      "belgique": 1.923,
+      "france_sample_size": 175
+    },
+    "sp95": {
+      "france": 1.832,
+      "belgique": 1.677,
+      "france_sample_size": 152,
+      "france_source": "E10",
+      "belgique_source": "Essence 95 RON E10"
+    }
+  }
+}
