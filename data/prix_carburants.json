@@ -1,8 +1,8 @@
 {
-  "updated_at": "2026-03-11T10:47:07Z",
+  "updated_at": "2026-03-11T11:43:11Z",
   "sources": {
     "france": "API officielle prix carburants France, moyenne des stations du 59 et du 62 mises à jour depuis 3 jours",
-    "belgique": "Carbu Belgique, médiane des meilleurs prix par province"
+    "belgique": "Carbu Belgique, médiane des prix observés dans les localités du Hainaut et de Flandre occidentale"
   },
   "scope": {
     "france_departements": [
@@ -12,10 +12,9 @@
     "france_max_age_days": 3,
     "belgique_provinces": [
       "Hainaut",
-      "Namur",
       "Flandre Occidentale"
     ],
-    "belgique_aggregation": "median"
+    "belgique_aggregation": "median_all_localites"
   },
   "hypotheses": {
     "plein_litres": 40,
@@ -23,34 +22,36 @@
   },
   "prices": {
     "gazole": {
-      "france": 2.037,
-      "belgique": 1.743,
-      "france_sample_size": 382,
-      "belgique_min": 1.733,
-      "belgique_min_province": "Namur"
+      "france": 2.038,
+      "belgique": 1.843,
+      "france_sample_size": 376,
+      "belgique_sample_size": 123,
+      "belgique_min": 1.743,
+      "belgique_min_province": "Hainaut"
     },
     "sp95": {
-      "france": 1.832,
-      "belgique": 1.502,
-      "france_sample_size": 332,
+      "france": 1.831,
+      "belgique": 1.607,
+      "france_sample_size": 325,
       "france_source": "E10",
-      "belgique_source": "Super 95 (E10)",
-      "belgique_min": 1.487,
-      "belgique_min_province": "Namur"
+      "belgique_source": "E10",
+      "belgique_sample_size": 123,
+      "belgique_min": 1.502,
+      "belgique_min_province": "Hainaut"
     }
   },
   "calculs": {
     "gazole": {
-      "ecart_prix": 0.294,
-      "economie_plein_40l": 11.76,
-      "distance_max_aller_km": 48.1,
-      "distance_max_ar_km": 96.2
+      "ecart_prix": 0.195,
+      "economie_plein_40l": 7.8,
+      "distance_max_aller_km": 31.9,
+      "distance_max_ar_km": 63.8
     },
     "sp95": {
-      "ecart_prix": 0.33,
-      "economie_plein_40l": 13.2,
-      "distance_max_aller_km": 60.0,
-      "distance_max_ar_km": 120.1
+      "ecart_prix": 0.224,
+      "economie_plein_40l": 8.96,
+      "distance_max_aller_km": 40.8,
+      "distance_max_ar_km": 81.6
     }
   }
 }
