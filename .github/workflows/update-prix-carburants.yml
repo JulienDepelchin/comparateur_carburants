@@ -39,6 +39,8 @@ jobs:
         env:
           BRANCH_NAME: ${{ github.ref_name }}
         run: |
+          set -e
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
@@ -51,7 +53,23 @@ jobs:
 
           git commit -m "Mise à jour automatique des prix carburants"
 
-          git fetch origin "$BRANCH_NAME"
-          git rebase "origin/$BRANCH_NAME"
+          for i in 1 2 3; do
+            echo "Tentative de push $i"
 
-          git push origin "HEAD:$BRANCH_NAME"
+            git fetch origin "$BRANCH_NAME"
+            git rebase "origin/$BRANCH_NAME" || {
+              echo "Rebase impossible, abandon"
+              exit 1
+            }
+
+            if git push origin "HEAD:$BRANCH_NAME"; then
+              echo "Push réussi"
+              exit 0
+            fi
+
+            echo "Push rejeté, nouvelle tentative..."
+            sleep 5
+          done
+
+          echo "Échec après 3 tentatives"
+          exit 1
