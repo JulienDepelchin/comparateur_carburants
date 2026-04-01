@@ -10,7 +10,7 @@ permissions:
 
 concurrency:
   group: prix-carburants-update
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   update-json:
@@ -18,12 +18,13 @@ jobs:
 
     steps:
       - name: Checkout du repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
+          ref: main
           fetch-depth: 0
 
       - name: Installer Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
 
@@ -36,11 +37,7 @@ jobs:
         run: python scripts/update_prix_carburants_dual.py
 
       - name: Commit et push si changement
-        env:
-          BRANCH_NAME: ${{ github.ref_name }}
         run: |
-          set -e
-
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
@@ -53,23 +50,5 @@ jobs:
 
           git commit -m "Mise à jour automatique des prix carburants"
 
-          for i in 1 2 3; do
-            echo "Tentative de push $i"
-
-            git fetch origin "$BRANCH_NAME"
-            git rebase "origin/$BRANCH_NAME" || {
-              echo "Rebase impossible, abandon"
-              exit 1
-            }
-
-            if git push origin "HEAD:$BRANCH_NAME"; then
-              echo "Push réussi"
-              exit 0
-            fi
-
-            echo "Push rejeté, nouvelle tentative..."
-            sleep 5
-          done
-
-          echo "Échec après 3 tentatives"
-          exit 1
+          git pull --rebase origin main
+          git push --force-with-lease origin main
