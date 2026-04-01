@@ -8,23 +8,16 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: prix-carburants-update
-  cancel-in-progress: true
-
 jobs:
   update-json:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout du repo
-        uses: actions/checkout@v5
-        with:
-          ref: main
-          fetch-depth: 0
+        uses: actions/checkout@v4
 
       - name: Installer Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
@@ -34,21 +27,12 @@ jobs:
           pip install -r requirements.txt
 
       - name: Exécuter le script
-        run: python scripts/update_prix_carburants_dual.py
+        run: python scripts/update_prix_carburants.py
 
       - name: Commit et push si changement
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          git add data/prix_carburants.json data/prix_carburants_dual.json
-
-          if git diff --cached --quiet; then
-            echo "Aucun changement à commit"
-            exit 0
-          fi
-
-          git commit -m "Mise à jour automatique des prix carburants"
-
-          git pull --rebase origin main
-          git push --force-with-lease origin main
+          git add data/prix_carburants.json
+          git diff --staged --quiet || git commit -m "Mise à jour automatique des prix carburants"
+          git push
