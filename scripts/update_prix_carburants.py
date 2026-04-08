@@ -89,9 +89,16 @@ print("France - Gazole :", prix_fr_gazole, f"({nb_fr_gazole} stations)")
 print("France - SP95 (E10) :", prix_fr_sp95, f"({nb_fr_sp95} stations, source {source_fr_sp95})")
 
 # =========================
-# 2) BELGIQUE
+# 2) BELGIQUE (avec fallback)
 # =========================
-HEADERS = {"User-Agent": "Mozilla/5.0"}
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Accept-Language": "fr-FR,fr;q=0.9,en;q=0.8",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "Referer": "https://www.google.fr/",
+}
 
 def clean_price(series):
     return pd.to_numeric(
@@ -103,44 +110,82 @@ def clean_price(series):
         errors="coerce"
     )
 
-dfs_be = []
+# Charge l'ancien JSON si disponible (fallback)
+OLD_PRICES = None
+OLD_UPDATED_AT = None
+if OUTPUT_PATH.exists():
+    try:
+        old = json.loads(OUTPUT_PATH.read_text(encoding="utf-8"))
+        OLD_PRICES = old.get("prices")
+        OLD_UPDATED_AT = old.get("updated_at")
+        print(f"Ancien JSON chargé (updated_at: {OLD_UPDATED_AT})")
+    except Exception as e:
+        print(f"Impossible de charger l'ancien JSON : {e}")
 
-for province, url in BELGIQUE_URLS.items():
-    print(f"\nLecture Belgique : {province}")
-    html = requests.get(url, headers=HEADERS, timeout=30).text
-    df_be_province = pd.read_html(StringIO(html))[0].copy()
+belgique_ok = False
+belgique_fallback = False
 
-    col_localite = df_be_province.columns[0]
-    col_sp95 = "E10"
-    col_gazole = "GO"
+try:
+    dfs_be = []
 
-    df_be_province[col_sp95] = clean_price(df_be_province[col_sp95])
-    df_be_province[col_gazole] = clean_price(df_be_province[col_gazole])
+    for province, url in BELGIQUE_URLS.items():
+        print(f"\nLecture Belgique : {province}")
+        response = requests.get(url, headers=HEADERS, timeout=30)
+        html = response.text
 
-    tmp = df_be_province[[col_localite, col_sp95, col_gazole]].copy()
-    tmp.columns = ["localite", "sp95_e10", "gazole"]
-    tmp["province"] = province
-    dfs_be.append(tmp)
+        print(f"  Status: {response.status_code} | HTML length: {len(html)}")
+        if len(html) < 5000:
+            raise ValueError(f"Page trop courte pour {province} ({len(html)} chars) - probable blocage")
 
-df_be = pd.concat(dfs_be, ignore_index=True)
+        tables = pd.read_html(StringIO(html))
+        print(f"  {len(tables)} tableau(x) trouvé(s)")
+        df_be_province = tables[0].copy()
 
-print("\n--- Belgique : nombre de lignes par province ---")
-print(df_be["province"].value_counts())
+        col_localite = df_be_province.columns[0]
+        col_sp95 = "E10"
+        col_gazole = "GO"
 
-prix_be_sp95 = round(df_be["sp95_e10"].dropna().median(), 3)
-prix_be_gazole = round(df_be["gazole"].dropna().median(), 3)
+        df_be_province[col_sp95] = clean_price(df_be_province[col_sp95])
+        df_be_province[col_gazole] = clean_price(df_be_province[col_gazole])
 
-prix_be_sp95_min = round(df_be["sp95_e10"].dropna().min(), 3)
-prix_be_gazole_min = round(df_be["gazole"].dropna().min(), 3)
+        tmp = df_be_province[[col_localite, col_sp95, col_gazole]].copy()
+        tmp.columns = ["localite", "sp95_e10", "gazole"]
+        tmp["province"] = province
+        dfs_be.append(tmp)
 
-province_sp95_min = df_be.loc[df_be["sp95_e10"].idxmin(), "province"]
-province_gazole_min = df_be.loc[df_be["gazole"].idxmin(), "province"]
+    df_be = pd.concat(dfs_be, ignore_index=True)
 
-nb_be_sp95 = int(df_be["sp95_e10"].notna().sum())
-nb_be_gazole = int(df_be["gazole"].notna().sum())
+    print("\n--- Belgique : nombre de lignes par province ---")
+    print(df_be["province"].value_counts())
 
-print("\nBelgique - SP95 (E10) médiane globale :", prix_be_sp95)
-print("Belgique - Gazole médiane globale :", prix_be_gazole)
+    prix_be_sp95 = round(df_be["sp95_e10"].dropna().median(), 3)
+    prix_be_gazole = round(df_be["gazole"].dropna().median(), 3)
+    prix_be_sp95_min = round(df_be["sp95_e10"].dropna().min(), 3)
+    prix_be_gazole_min = round(df_be["gazole"].dropna().min(), 3)
+    province_sp95_min = df_be.loc[df_be["sp95_e10"].idxmin(), "province"]
+    province_gazole_min = df_be.loc[df_be["gazole"].idxmin(), "province"]
+    nb_be_sp95 = int(df_be["sp95_e10"].notna().sum())
+    nb_be_gazole = int(df_be["gazole"].notna().sum())
+
+    print("\nBelgique - SP95 (E10) médiane globale :", prix_be_sp95)
+    print("Belgique - Gazole médiane globale :", prix_be_gazole)
+    belgique_ok = True
+
+except Exception as e:
+    print(f"\n⚠️ Scraping Belgique échoué : {e}")
+    if OLD_PRICES:
+        print("→ Fallback sur données Belgique du dernier JSON valide")
+        prix_be_gazole = OLD_PRICES["gazole"]["belgique"]
+        prix_be_sp95 = OLD_PRICES["sp95"]["belgique"]
+        prix_be_gazole_min = OLD_PRICES["gazole"]["belgique_min"]
+        prix_be_sp95_min = OLD_PRICES["sp95"]["belgique_min"]
+        province_gazole_min = OLD_PRICES["gazole"]["belgique_min_province"]
+        province_sp95_min = OLD_PRICES["sp95"]["belgique_min_province"]
+        nb_be_gazole = OLD_PRICES["gazole"]["belgique_sample_size"]
+        nb_be_sp95 = OLD_PRICES["sp95"]["belgique_sample_size"]
+        belgique_fallback = True
+    else:
+        raise RuntimeError("Scraping Belgique échoué et aucun JSON de fallback disponible") from e
 
 # =========================
 # 3) CALCULS
@@ -190,6 +235,7 @@ output = {
         "plein_litres": PLEIN_LITRES,
         "consommation_l_100": CONSO_L_100
     },
+    "belgique_data_status": "live" if belgique_ok else f"fallback_from_{OLD_UPDATED_AT}",
     "prices": {
         "gazole": {
             "france": prix_fr_gazole,
@@ -220,4 +266,6 @@ OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 OUTPUT_PATH.write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
 
 print(f"\nFichier créé : {OUTPUT_PATH}")
+if belgique_fallback:
+    print("⚠️  ATTENTION : données Belgique issues du fallback (dernier JSON valide)")
 print(json.dumps(output, ensure_ascii=False, indent=2))
