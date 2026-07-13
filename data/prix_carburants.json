@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-07-12T07:53:00Z",
+  "updated_at": "2026-07-13T08:40:17Z",
   "sources": {
     "france": "API officielle prix carburants France, moyenne des stations du 59 et du 62 mises à jour au cours des trois derniers jours",
     "belgique": "Carbu Belgique, médiane des prix observés dans les localités du Hainaut et de Flandre occidentale"
@@ -23,9 +23,9 @@
   "belgique_data_status": "live",
   "prices": {
     "gazole": {
-      "france": 1.972,
+      "france": 1.974,
       "belgique": 1.959,
-      "france_sample_size": 377,
+      "france_sample_size": 346,
       "belgique_sample_size": 123,
       "belgique_min": 1.85,
       "belgique_min_province": "Flandre Occidentale"
@@ -33,20 +33,20 @@
     "sp95": {
       "france": 1.922,
       "belgique": 1.769,
-      "france_sample_size": 310,
+      "france_sample_size": 263,
       "france_source": "E10",
       "belgique_source": "E10",
       "belgique_sample_size": 123,
-      "belgique_min": 1.658,
+      "belgique_min": 1.659,
       "belgique_min_province": "Flandre Occidentale"
     }
   },
   "calculs": {
     "gazole": {
-      "ecart_prix": 0.013,
-      "economie_plein_40l": 0.52,
-      "distance_max_aller_km": 2.2,
-      "distance_max_ar_km": 4.4
+      "ecart_prix": 0.015,
+      "economie_plein_40l": 0.6,
+      "distance_max_aller_km": 2.5,
+      "distance_max_ar_km": 5.1
     },
     "sp95": {
       "ecart_prix": 0.153,
